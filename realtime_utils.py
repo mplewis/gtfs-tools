@@ -12,9 +12,6 @@ class StaticSched:
     def trips_with_kw(self, kw):
         return [t for t in self.sched.trips if kw in t.trip_headsign]
 
-    def trip_ids(self):
-        return
-
 class RealtimeSched:
     def __init__(self, sched):
         self.sched = sched
