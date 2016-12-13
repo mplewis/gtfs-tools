@@ -1,12 +1,12 @@
 import gtfs_utils
+from config import rtd_creds
 
 from flask import Flask, request
 from flask_restful import Resource, Api, abort
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 
-app = Flask(__name__)
-api = Api(app)
+realtime_url = 'http://www.rtd-denver.com/google_sync/TripUpdate.pb'
 
 gtfs_cache = CacheManager(**parse_cache_config_options({
     'cache.type': 'file',
@@ -18,6 +18,10 @@ gtfs_cache = CacheManager(**parse_cache_config_options({
 def get_sched():
     print('Fetching new schedule data')
     return gtfs_utils.static_from_file('google_transit.zip')
+
+def get_realtime(trips, stop_id):
+    rsched = gtfs_utils.realtime_from(realtime_url, auth=rtd_creds)
+    return rsched.arrival_times(trips, stop_id)
 
 sched = get_sched()
 
@@ -67,12 +71,31 @@ class Stop(Resource):
             abort(404, message='No stop found with ID "{}"'.format(stop_id))
         return sched.stops[stop_id]
 
+class Realtime(Resource):
+    def get(self):
+        route_id = request.args.get('route')
+        headsign = request.args.get('headsign')
+        stop_id = request.args.get('stop')
+        if not (route_id and headsign and stop_id):
+            abort(400, message='Query params "route", "headsign", and "stop" are required')
+        trips = sched.route_trips(route_id)
+        trips = [t for t in trips if t['trip_headsign'] == headsign]
+        if not trips:
+            abort(404, message='No trips found with headsign "{}"'.format(headsign))
+        if stop_id not in sched.stops:
+            abort(404, message='No stop found with ID "{}"'.format(stop_id))
+        return get_realtime(trips, stop_id)
+
+app = Flask(__name__)
+api = Api(app)
+
 api.add_resource(Routes, '/routes')
 api.add_resource(Route, '/routes/<route_id>')
 api.add_resource(Trips, '/routes/<route_id>/trips')
 api.add_resource(Trip, '/trips/<trip_id>')
 api.add_resource(Stops, '/trips/<trip_id>/stops')
 api.add_resource(Stop, '/stops/<stop_id>')
+api.add_resource(Realtime, '/realtime')
 
 if __name__ == '__main__':
     app.run(debug=True)
