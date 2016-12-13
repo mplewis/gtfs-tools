@@ -37,7 +37,7 @@ class RealtimeSched:
         self.sched = sched
 
     def arrival_times(self, trips, stop_id):
-        trip_ids = [t.trip_id for t in trips]
+        trip_ids = [t['trip_id'] for t in trips]
         vehicles = []
         for e in self.sched.entity:
             update = e.trip_update
@@ -47,8 +47,7 @@ class RealtimeSched:
         for vehicle in vehicles:
             for stop in vehicle:
                 if stop.stop_id == stop_id:
-                    time = datetime.fromtimestamp(stop.arrival.time)
-                    arrivals.append(time)
+                    arrivals.append(stop.arrival.time)
         return sorted(arrivals)
 
 def _static_from(fileobj):
@@ -56,7 +55,6 @@ def _static_from(fileobj):
     with TemporaryDirectory() as td:
         zf.extractall(path=td)
         return StaticSched(td)
-
 
 def static_from_url(url, **kwargs):
     resp = requests.get(url, **kwargs)
