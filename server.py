@@ -8,13 +8,13 @@ from beaker.util import parse_cache_config_options
 app = Flask(__name__)
 api = Api(app)
 
-cache = CacheManager(**parse_cache_config_options({
+gtfs_cache = CacheManager(**parse_cache_config_options({
     'cache.type': 'file',
     'cache.data_dir': '/tmp/gtfs-tools/data',
     'cache.lock_dir': '/tmp/gtfs-tools/lock',
 }))
 
-@cache.cache('get_sched')
+@gtfs_cache.cache('get_sched')
 def get_sched():
     print('Fetching new schedule data')
     return gtfs_utils.static_from_file('google_transit.zip')
@@ -47,9 +47,23 @@ class Trips(Resource):
                     if headsign.lower() in t['trip_headsign'].lower()]
         return trips
 
+class Trip(Resource):
+    def get(self, trip_id):
+        if trip_id not in sched.trips:
+            abort(404, message='No trip found with ID "{}"'.format(trip_id))
+        return sched.trips[trip_id]
+
+class Stops(Resource):
+    def get(self, trip_id):
+        if trip_id not in sched.trips:
+            abort(404, message='No trip found with ID "{}"'.format(trip_id))
+        return sched.trip_stops(trip_id)
+
 api.add_resource(Routes, '/routes')
 api.add_resource(Route, '/routes/<route_id>')
 api.add_resource(Trips, '/trips')
+api.add_resource(Trip, '/trips/<trip_id>')
+api.add_resource(Stops, '/trips/<trip_id>/stops')
 
 if __name__ == '__main__':
     app.run(debug=True)
