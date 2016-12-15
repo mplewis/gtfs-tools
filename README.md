@@ -42,6 +42,13 @@ python server.py  # production
 DEBUG=TRUE python server.py  # debug
 ```
 
+# Testing
+
+```sh
+pip install -r test/requirements.txt
+py.test
+```
+
 # License
 
 MIT

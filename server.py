@@ -7,8 +7,9 @@ import os
 
 
 app = Flask(__name__)
-app.config.from_object(__name__)
-if os.environ.get('DEBUG'):
+if os.environ.get('TESTING'):
+    app.config.from_object('config_test.Test')
+elif os.environ.get('DEBUG'):
     app.config.from_object('config.Debug')
 else:
     app.config.from_object('config.Base')
@@ -16,13 +17,16 @@ else:
 
 def get_static():
     config = app.config['GTFS_STATIC']
-    print('Fetching static GTFS data...')
+    if 'file' in config:
+        return gtfs_utils.static_from_file(config['file'])
+    print('Fetching static GTFS data from server. This may take a while...')
     return gtfs_utils.static_from_url(config['url'], **config['args'])
-    print('Static GTFS data updated.')
 
 
 def get_realtime():
     config = app.config['GTFS_REALTIME']
+    if 'file' in config:
+        return gtfs_utils.realtime_from_file(config['file'])
     return gtfs_utils.realtime_from_url(config['url'], **config['args'])
 
 
@@ -67,6 +71,11 @@ def searchable(data, key):
         return [i for i in data if query.lower() in i[key].lower()]
     return data
 
+
+class Root(Resource):
+    def get(self):
+        return '', 204
+
 class Routes(Resource):
     def get(self):
         return searchable(ssched.all_routes(), 'route_short_name')
@@ -105,6 +114,7 @@ class Realtime(Resource):
 
 api = Api(app)
 
+api.add_resource(Root, '/')
 api.add_resource(Routes, '/routes')
 api.add_resource(Route, '/routes/<route_id>')
 api.add_resource(Trips, '/routes/<route_id>/trips')

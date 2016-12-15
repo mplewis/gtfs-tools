@@ -1,3 +1,4 @@
 *.sqlite
 config.py
 google_transit.zip
+.cache/*

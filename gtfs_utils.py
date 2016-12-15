@@ -64,10 +64,16 @@ def static_from_file(path):
     with open(path, 'rb') as f:
         return _static_from(f)
 
+def _realtime_from(data):
+    parsed = gtfs_realtime_pb2.FeedMessage()
+    parsed.ParseFromString(data)
+    return RealtimeSched(parsed)
+
 def realtime_from_url(url, **kwargs):
     resp = requests.get(url, **kwargs)
     resp.raise_for_status()
-    raw = resp.content
-    parsed = gtfs_realtime_pb2.FeedMessage()
-    parsed.ParseFromString(raw)
-    return RealtimeSched(parsed)
+    return _realtime_from(resp.content)
+
+def realtime_from_file(path):
+    with open(path, 'rb') as f:
+        return _realtime_from(f.read())
