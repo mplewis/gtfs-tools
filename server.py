@@ -39,17 +39,20 @@ def get_route(route_id):
     except KeyError:
         abort(404, message='No route found with ID "{}"'.format(route_id))
 
+
 def get_trip(trip_id):
     try:
         return ssched.trips[trip_id]
     except KeyError:
         abort(404, message='No trip found with ID "{}"'.format(trip_id))
 
+
 def get_stop(stop_id):
     try:
         return ssched.stops[stop_id]
     except KeyError:
         abort(404, message='No stop found with ID "{}"'.format(stop_id))
+
 
 def get_realtime_est(route_id, headsign, stop_id):
     rsched = get_realtime()
@@ -60,6 +63,7 @@ def get_realtime_est(route_id, headsign, stop_id):
         abort(404, message='No trips found with headsign "{}"'.format(headsign))
     get_stop(stop_id)
     return rsched.arrival_times(trips, stop_id)
+
 
 def searchable(data, key):
     """
@@ -76,31 +80,38 @@ class Root(Resource):
     def get(self):
         return '', 204
 
+
 class Routes(Resource):
     def get(self):
         return searchable(ssched.all_routes(), 'route_short_name')
 
+
 class Route(Resource):
     def get(self, route_id):
         return get_route(route_id)
+
 
 class Trips(Resource):
     def get(self, route_id):
         get_route(route_id)
         return searchable(ssched.route_trips(route_id), 'trip_headsign')
 
+
 class Trip(Resource):
     def get(self, trip_id):
         return get_trip(trip_id)
+
 
 class Stops(Resource):
     def get(self, trip_id):
         get_trip(trip_id)
         return searchable(ssched.trip_stops(trip_id), 'stop_name')
 
+
 class Stop(Resource):
     def get(self, stop_id):
         return get_stop(stop_id)
+
 
 class Realtime(Resource):
     def get(self):
