@@ -1,5 +1,7 @@
 # gtfs-tools
 
+[![CircleCI](https://circleci.com/gh/mplewis/gtfs-tools.svg?style=svg)](https://circleci.com/gh/mplewis/gtfs-tools)
+
 Some useful stuff for working with GTFS [Static](https://developers.google.com/transit/gtfs/) and [Realtime](https://developers.google.com/transit/gtfs-realtime/) data.
 
 # Server
