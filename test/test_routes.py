@@ -21,3 +21,18 @@ def test_route_search():
     len(resp.json).should.equal(1)
     name = resp.json[0]['route_long_name']
     name.should.equal('Bullfrog - Furnace Creek Resort')
+
+
+def test_route():
+    resp = app.get('/routes/BFC')
+    resp.json['route_short_name'].should.equal('20')
+
+
+def test_route_trips():
+    resp = app.get('/routes/BFC/trips')
+    len(resp.json).should.equal(2)
+
+
+def test_route_trips_search():
+    resp = app.get('/routes/BFC/trips?q=furnace')
+    len(resp.json).should.equal(1)
