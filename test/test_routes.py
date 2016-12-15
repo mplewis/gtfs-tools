@@ -1,10 +1,10 @@
 from server import app as app_under_test
 
 import sure  # noqa
-from webtest import TestApp
+from webtest import TestApp as TApp
 
 
-app = TestApp(app_under_test)
+app = TApp(app_under_test)
 
 
 def test_root():
