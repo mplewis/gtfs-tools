@@ -36,3 +36,19 @@ def test_route_trips():
 def test_route_trips_search():
     resp = app.get('/routes/BFC/trips?q=furnace')
     len(resp.json).should.equal(1)
+
+
+def test_trip():
+    resp = app.get('/trips/BFC1')
+    resp.json['trip_headsign'].should.equal('to Furnace Creek Resort')
+
+
+def test_trip_stops():
+    resp = app.get('/trips/BFC1/stops')
+    len(resp.json).should.equal(2)
+
+
+def test_trip_stops_search():
+    resp = app.get('/trips/BFC1/stops?q=bullfrog')
+    len(resp.json).should.equal(1)
+    resp.json[0]['stop_id'].should.equal('BULLFROG')
