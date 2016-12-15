@@ -52,3 +52,8 @@ def test_trip_stops_search():
     resp = app.get('/trips/BFC1/stops?q=bullfrog')
     len(resp.json).should.equal(1)
     resp.json[0]['stop_id'].should.equal('BULLFROG')
+
+
+def test_stop():
+    resp = app.get('/stops/BULLFROG')
+    resp.json['stop_name'].should.equal('Bullfrog (Demo)')
