@@ -57,14 +57,19 @@ def get_realtime_est(route_id, headsign, stop_id):
     get_stop(stop_id)
     return rsched.arrival_times(trips, stop_id)
 
+def searchable(data, key):
+    """
+    Filter `data` on the case-insensitive value for `key` if the query
+    parameter `q` is provided. Otherwise, return all data.
+    """
+    query = request.args.get('q')
+    if query:
+        return [i for i in data if query.lower() in i[key].lower()]
+    return data
+
 class Routes(Resource):
     def get(self):
-        routes = ssched.all_routes()
-        query = request.args.get('q')
-        if query:
-            return [r for r in routes
-                    if query.lower() in r['route_short_name'].lower()]
-        return routes
+        return searchable(ssched.all_routes(), 'route_short_name')
 
 class Route(Resource):
     def get(self, route_id):
@@ -72,12 +77,8 @@ class Route(Resource):
 
 class Trips(Resource):
     def get(self, route_id):
-        trips = ssched.route_trips(route_id)
-        query = request.args.get('q')
-        if query:
-            return [t for t in trips
-                    if query.lower() in t['trip_headsign'].lower()]
-        return trips
+        get_route(route_id)
+        return searchable(ssched.route_trips(route_id), 'trip_headsign')
 
 class Trip(Resource):
     def get(self, trip_id):
@@ -86,12 +87,7 @@ class Trip(Resource):
 class Stops(Resource):
     def get(self, trip_id):
         get_trip(trip_id)
-        stops = ssched.trip_stops(trip_id)
-        query = request.args.get('q')
-        if query:
-            return [r for r in stops
-                    if query.lower() in r['stop_name'].lower()]
-        return stops
+        return searchable(ssched.trip_stops(trip_id), 'stop_name')
 
 class Stop(Resource):
     def get(self, stop_id):
