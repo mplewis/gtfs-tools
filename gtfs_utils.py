@@ -3,7 +3,6 @@ import gtfs_realtime_pb2
 import requests
 
 from csv import DictReader
-from datetime import datetime
 from io import BytesIO
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
@@ -65,7 +64,7 @@ def static_from_file(path):
     with open(path, 'rb') as f:
         return _static_from(f)
 
-def realtime_from(url, **kwargs):
+def realtime_from_url(url, **kwargs):
     resp = requests.get(url, **kwargs)
     resp.raise_for_status()
     raw = resp.content
